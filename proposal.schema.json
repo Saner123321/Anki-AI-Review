@@ -1,0 +1,47 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Anki AI Review proposal document",
+  "type": "object",
+  "required": ["schema", "proposals"],
+  "properties": {
+    "schema": {"const": "anki-ai-review/1"},
+    "proposals": {
+      "type": "array", "minItems": 1, "maxItems": 500,
+      "items": {
+        "type": "object",
+        "required": ["id", "action"],
+        "properties": {
+          "id": {"type": "string", "minLength": 1, "maxLength": 150},
+          "action": {"enum": ["add", "update", "delete"]},
+          "reason": {"type": "string"},
+          "base": {"$ref": "#/$defs/snapshot"},
+          "fields": {"$ref": "#/$defs/fields"},
+          "notetype": {"type": "string", "minLength": 1, "default": "XXHK - 问答"},
+          "deck": {"type": "string"}
+        },
+        "allOf": [
+          {"if": {"properties": {"action": {"const": "add"}}}, "then": {"required": ["deck", "fields"]}},
+          {"if": {"properties": {"action": {"enum": ["update", "delete"]}}}, "then": {"required": ["base"]}},
+          {"if": {"properties": {"action": {"const": "update"}}}, "then": {"required": ["fields"]}}
+        ]
+      }
+    }
+  },
+  "$defs": {
+    "fields": {"type": "object", "minProperties": 1, "additionalProperties": {"type": "string", "maxLength": 200000}},
+    "snapshot": {
+      "type": "object",
+      "required": ["note_id", "guid", "mid", "fields", "tags", "model_hash", "profile_id", "fingerprint"],
+      "properties": {
+        "note_id": {"type": "integer"},
+        "guid": {"type": "string"},
+        "mid": {"type": "integer"},
+        "fields": {"$ref": "#/$defs/fields"},
+        "tags": {"type": "array", "items": {"type": "string"}},
+        "model_hash": {"type": "string"},
+        "profile_id": {"type": "string"},
+        "fingerprint": {"type": "string"}
+      }
+    }
+  }
+}
